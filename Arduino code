@@ -1,0 +1,201 @@
+#include <Servo.h>
+
+#define CALIB_MAX1 680
+#define CALIB_MIN1 10
+#define CALIB_MAX2 660
+#define CALIB_MIN2 0
+#define CALIB_MAX3 664
+#define CALIB_MIN3 0
+#define CALIB_MAX4 495
+#define CALIB_MIN4 111
+#define SAMPLE_DELAY 300 // in ms, adjust for less frequent recording
+#define FINAL_POSITION_DELAY 50 // in ms, delay to ensure servo reaches the final position
+#define JITTER_THRESHOLD 3 // ignore small changes
+
+uint8_t recordButtonPin = 12;
+uint8_t playButtonPin = 7;
+uint8_t servoPin1 = 9;
+uint8_t feedbackPin1 = A0;
+uint8_t servoPin2 = 10;
+uint8_t feedbackPin2 = A1;
+uint8_t servoPin3 = 11;
+uint8_t feedbackPin3 = A2;
+uint8_t servoPin4 = 3;
+uint8_t feedbackPin4 = A3;
+uint8_t ledPin = 13;
+
+Servo myServo1;
+Servo myServo2;
+Servo myServo3;
+Servo myServo4;
+
+bool isRecording = false;
+bool isPlaying = false;
+
+int lastRecordedPos1 = -1;
+int lastRecordedPos2 = -1;
+int lastRecordedPos3 = -1;
+int lastRecordedPos4 = -1;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(recordButtonPin, INPUT_PULLUP);
+  pinMode(playButtonPin, INPUT_PULLUP);
+  pinMode(ledPin, OUTPUT);
+
+  Serial.println("Servo RecordPlay");
+}
+
+void loop() {
+  if (!digitalRead(recordButtonPin)) {
+    delay(10);
+    while (!digitalRead(recordButtonPin));
+    delay(20);
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  }
+
+  if (!digitalRead(playButtonPin)) {
+    delay(10);
+    while (!digitalRead(playButtonPin));
+    delay(20);
+    if (!isPlaying) {
+      startPlaying();
+    }
+  }
+
+  if (isRecording) {
+    recordServos();
+  }
+
+  if (isPlaying) {
+    playServos();
+  }
+}
+
+void recordServos() {
+  int a1 = analogRead(feedbackPin1);
+  int a2 = analogRead(feedbackPin2);
+  int a3 = analogRead(feedbackPin3);
+  int a4 = analogRead(feedbackPin4);
+
+  a1 = constrain(a1, CALIB_MIN1, CALIB_MAX1);
+  a2 = constrain(a2, CALIB_MIN2, CALIB_MAX2);
+  a3 = constrain(a3, CALIB_MIN3, CALIB_MAX3);
+  a4 = constrain(a4, CALIB_MIN4, CALIB_MAX4);
+
+  a1 = map(a1, CALIB_MIN1, CALIB_MAX1, 0, 254);
+  a2 = map(a2, CALIB_MIN2, CALIB_MAX2, 0, 254);
+  a3 = map(a3, CALIB_MIN3, CALIB_MAX3, 0, 254);
+  a4 = map(a4, CALIB_MIN4, CALIB_MAX4, 0, 254);
+
+  // Only record if the change in position is greater than the threshold
+  if (abs(a1 - lastRecordedPos1) > JITTER_THRESHOLD ||
+      abs(a2 - lastRecordedPos2) > JITTER_THRESHOLD ||
+      abs(a3 - lastRecordedPos3) > JITTER_THRESHOLD ||
+      abs(a4 - lastRecordedPos4) > JITTER_THRESHOLD) {
+
+    Serial.print(a1);
+    Serial.print(",");
+    Serial.print(a2);
+    Serial.print(",");
+    Serial.print(a3);
+    Serial.print(",");
+    Serial.println(a4);
+
+    lastRecordedPos1 = a1;
+    lastRecordedPos2 = a2;
+    lastRecordedPos3 = a3;
+    lastRecordedPos4 = a4;
+  }
+
+  delay(SAMPLE_DELAY);
+}
+
+void playServos() {
+  static int currentPos1 = -1;
+  static int currentPos2 = -1;
+  static int currentPos3 = -1;
+  static int currentPos4 = -1;
+
+  if (currentPos1 == -1) currentPos1 = myServo1.read();
+  if (currentPos2 == -1) currentPos2 = myServo2.read();
+  if (currentPos3 == -1) currentPos3 = myServo3.read();
+  if (currentPos4 == -1) currentPos4 = myServo4.read();
+
+  if (Serial.available() > 0) {
+    String line = Serial.readStringUntil('\n');
+    if (line == "Playing Stopped") {
+      stopPlaying();
+    } else {
+      int targetPos1, targetPos2, targetPos3, targetPos4;
+      sscanf(line.c_str(), "%d,%d,%d,%d", &targetPos1, &targetPos2, &targetPos3, &targetPos4);
+
+      targetPos1 = map(targetPos1, 0, 254, 0, 180);
+      targetPos2 = map(targetPos2, 0, 254, 0, 180);
+      targetPos3 = map(targetPos3, 0, 254, 0, 180);
+      targetPos4 = map(targetPos4, 0, 254, 0, 180);
+
+      myServo1.attach(servoPin1);
+      myServo2.attach(servoPin2);
+      myServo3.attach(servoPin3);
+      myServo4.attach(servoPin4);
+
+      for (int step = 0; step <= 20; step++) { // 20 steps for smooth transition
+        int intermediatePos1 = currentPos1 + ((targetPos1 - currentPos1) * step / 20);
+        int intermediatePos2 = currentPos2 + ((targetPos2 - currentPos2) * step / 20);
+        int intermediatePos3 = currentPos3 + ((targetPos3 - currentPos3) * step / 20);
+        int intermediatePos4 = currentPos4 + ((targetPos4 - currentPos4) * step / 20);
+
+        myServo1.write(intermediatePos1);
+        myServo2.write(intermediatePos2);
+        myServo3.write(intermediatePos3);
+        myServo4.write(intermediatePos4);
+        delay(SAMPLE_DELAY / 20); // shorter delay for smooth transition
+      }
+
+      currentPos1 = targetPos1;
+      currentPos2 = targetPos2;
+      currentPos3 = targetPos3;
+      currentPos4 = targetPos4;
+
+      myServo1.write(currentPos1);
+      myServo2.write(currentPos2);
+      myServo3.write(currentPos3);
+      myServo4.write(currentPos4);
+      delay(FINAL_POSITION_DELAY); // delay to ensure servo reaches the final position
+
+      myServo1.detach();
+      myServo2.detach();
+      myServo3.detach();
+      myServo4.detach();
+    }
+  }
+}
+
+void startRecording() {
+  isRecording = true;
+  digitalWrite(ledPin, HIGH);
+  Serial.println("Recording Started");
+}
+
+void stopRecording() {
+  isRecording = false;
+  digitalWrite(ledPin, LOW);
+  Serial.println("Recording Stopped");
+  delay(250);
+}
+
+void startPlaying() {
+  isPlaying = true;
+  Serial.println("Playing Started");
+}
+
+void stopPlaying() {
+  isPlaying = false;
+  Serial.println("Playing Stopped");
+  delay(250);
+}
