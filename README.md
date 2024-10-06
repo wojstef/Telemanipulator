@@ -4,8 +4,6 @@ This master's thesis focuses on the development, configuration and integration o
 
 ![obraz](https://github.com/user-attachments/assets/54a3c30f-575b-4b25-a814-f02a8cec85c8)
 
-![obraz](https://github.com/user-attachments/assets/abd8f2b1-2bb1-49a5-8e7d-184d92132da0)
-
 ![obraz](https://github.com/user-attachments/assets/33551977-2c6e-4c65-a975-1689143dd6a4)
 
 ![obraz](https://github.com/user-attachments/assets/3bef22f1-9100-4819-9c7a-7e57db8ced04)
