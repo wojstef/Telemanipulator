@@ -1,0 +1,81 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+    margin: 0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+img#feed {
+    width: 100%;
+    height: auto;
+    border: 1px solid #ccc;
+    display: block;
+    margin-bottom: 10px;
+}
+
+button {
+    display: block;
+    margin: 10px 0;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0288d1;
+    color: #fff;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+input[type="text"]:focus {
+    border-color: #0288d1;
+}
+
+.label {
+    margin: 10px 0;
+    font-weight: bold;
+
+    
+}
+
+.feed-container {
+    display: inline-block;
+    margin-right: 20px; /* Add some spacing between feeds */
+    text-align: left; /* Reset text alignment for child elements */
+  }
+
+  .feed-parent {
+    text-align: center; /* Center the child elements horizontally */
+  }
+
+  .stop-button {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 12px;
+}

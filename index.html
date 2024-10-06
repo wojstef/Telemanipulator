@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="styles.css">
+<title>Webcam Feed and 6DoF Manipulator Control</title>
+</head>
+<body>
+
+    <div class="message" id="message">Loading message...</div>
+
+    <div class="feed-container">
+        <img id="feed1" src="" width="600px" height="400px" />
+        <button onclick="startFeed('feed1', 'video_feed1')">Start Feed 1</button>
+        <button onclick="stopFeed('feed1')">Stop Feed 1</button>
+      </div>
+      
+      <div class="feed-container">
+        <img id="feed2" src="" width="600px" height="400px" />
+        <button onclick="startFeed('feed2', 'video_feed2')">Start Feed 2</button>
+        <button onclick="stopFeed('feed2')">Stop Feed 2</button>
+      </div>
+
+
+<button onclick="executeTask1()">Move Medicine</button>
+<button onclick="executeTask2()">Count tablets</button>
+<button onclick="executeReset()">Reset</button>
+
+
+<button class="stop-button" onclick="stopProcess()">Stop Process</button>
+
+
+<button onclick="goHome()">Home</button>
+
+<input type="text" id="messageBox" readonly />
+
+
+<script src="script.js"></script>
+
+
+</body>
+</html>
